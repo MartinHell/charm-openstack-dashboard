@@ -37,6 +37,7 @@ from charmhelpers.fetch import (
 )
 from charmhelpers.core.host import (
     lsb_release,
+    service_reload,
 )
 from charmhelpers.contrib.openstack.utils import (
     config_value_changed,
@@ -304,6 +305,14 @@ def plugin_relation_joined(rel_id=None):
 @restart_on_change(restart_map(), stopstart=True, sleep=3)
 def update_plugin_config():
     CONFIGS.write(LOCAL_SETTINGS)
+
+    if relation_get('plugin-ready'):
+        service_reload('apache2')
+
+
+@hooks.hook('dashboard-plugin-relation-broken')
+def plugin_relation_broken():
+    service_reload('apache2')
 
 
 @hooks.hook('update-status')
